@@ -2,11 +2,12 @@
 
 import socket
 import math
+import threading
 
 HOST = '127.0.0.1'  # The server's hostname or IP address
 # HOST = '35.209.32.35'  # The server's hostname or IP address
 PORT = 65432        # The port used by the server
-
+RUNNING = True
 
 def split_send_bytes(s, inp):
     data_len = (len(inp))
@@ -28,22 +29,30 @@ def split_recv_bytes(s):
 
     return dat
 
-
+def get_inp_send(s):
+    try:
+        while RUNNING:
+            inp = input("Enter text to send:")
+            if (inp) == "":
+                continue
+            inp = inp.encode('utf8')
+            split_send_bytes(s, inp)
+    except OSError:
+        print("Connection has been closed")
 def test():
     HOST = input("Enter server IP")
+    global RUNNING
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         data = None
         s.connect((HOST, PORT))
+        send_thread = threading.Thread(target=get_inp_send, args=[s])
+        send_thread.start()
         while data != "quit":
-            inp = input("Enter text to send:")
-            while (inp) == "":
-                continue
-            inp = inp.encode('utf8')
-
-            split_send_bytes(s, inp)
+            # inp = get_inp_send(s)
             data = split_recv_bytes(s).decode('utf8')
             print('Received          :' + data)
-            print(inp.decode('utf8') == data)
+        RUNNING = False
+        send_thread.join()
 
 
 if __name__ == "__main__":
