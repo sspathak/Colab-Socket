@@ -35,7 +35,8 @@ def test():
         data = None
         s.connect((HOST, PORT))
         while data != "quit":
-            while (inp := input("Enter text to send:")) == "":
+            inp = input("Enter text to send:")
+            while (inp) == "":
                 continue
             inp = inp.encode('utf8')
 
